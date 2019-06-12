@@ -77,8 +77,6 @@ namespace IcalFilter
         public static async Task<CloudTable> CreateCalendarsTableAsync()
         {
             string tableName = "Calendars";
-            //var storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=icalstorage;AccountKey=BD9Setjn10IMuMQFoAW8euvppQRpe8TRuIPu+Cb863liXQSPlb13Sl9+IURPoKgp8i4ONIdFN1pSU6ZBCuQFSw==;EndpointSuffix=core.windows.net";
-            //var storageConnectionString = "UseDevelopmentStorage=true";
             var storageConnectionString = GetConnectionString();
             CloudStorageAccount storageAccount = CreateStorageAccountFromConnectionString(storageConnectionString);
 
