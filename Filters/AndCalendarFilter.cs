@@ -1,25 +1,21 @@
 namespace IcalFilter.Filters
 {
-    using System;
+    using System.Collections.Generic;
     using System.Linq;
     using Ical.Net.CalendarComponents;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
 
     public class AndCalendarFilter : ICalendarFilter
     {
-        private ICalendarFilter a;
-        private ICalendarFilter b;
+        private IEnumerable<ICalendarFilter> _filters;
 
-        public AndCalendarFilter(ICalendarFilter a, ICalendarFilter b)
+        public AndCalendarFilter(IEnumerable<ICalendarFilter> filters)
         {
-            this.a = a;
-            this.b = b;
+            this._filters = filters;
         }
 
         public bool IsMatch(CalendarEvent e)
         {
-            return a.IsMatch(e) && b.IsMatch(e);
+            return this._filters.ToList().All(f => f.IsMatch(e));
         }
     }
 }

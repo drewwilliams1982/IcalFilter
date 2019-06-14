@@ -1,6 +1,7 @@
 namespace IcalFilter.Filters
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using Ical.Net.CalendarComponents;
     using Newtonsoft.Json;
@@ -9,27 +10,18 @@ namespace IcalFilter.Filters
     public static class CalendarFilterFactory
     {
         /*
-            Search for XXX and YYY in Summary:
-            { 
-                "And": { 
-                    "A": { "Summary": ... }, 
-                    "B": { "Summary": ... } 
-                } 
-            }
-
-            { "Or": { "A": { "Summary": ... }, "B": { "Summary": ... } } }
-
             Search for "ZZZ" Or "XXX && YYY"
+            
             {
-                "Or" {
-                    "A": {
-                        "And": { 
-                            "A": { "Summary": ... }, 
-                            "B": { "Summary": ... } 
-                        }
-                    },
-                    "B": { "Summary": ... }
-                }
+                "Or": [
+                    { "Summary": "ZZZ", "Match": "contains" },
+                    {
+                        "And": [
+                            { "Summary": "XXX", "Match": "contains" },
+                            { "Summary": "YYY", "Match": "contains" }
+                        ]
+                    }
+                ]
             }
 
         */
@@ -39,20 +31,28 @@ namespace IcalFilter.Filters
             return GetFilterRecusive(ruleset);
         }
 
+        private static List<ICalendarFilter> GetFilterArray(dynamic rules)
+        {
+            var retval = new List<ICalendarFilter>();
+            var lst = new List<dynamic>(rules);
+            foreach(var l in lst)
+            {
+                retval.Add(GetFilterRecusive(l));
+            }
+
+            return retval;
+        }
+
         private static ICalendarFilter GetFilterRecusive(dynamic ruleset)
         {
             if(HasProperty(ruleset, "Or"))
             {
-                var orA = ruleset.Or.A;
-                var orB = ruleset.Or.B;
-                return new OrCalendarFilter(GetFilterRecusive(orA), GetFilterRecusive(orB));
+                return new OrCalendarFilter(GetFilterArray(ruleset.Or));
             }
 
             if(HasProperty(ruleset, "And"))
             {
-                var andA = ruleset.And.A;
-                var andB = ruleset.And.B;
-                return new AndCalendarFilter(GetFilterRecusive(andA), GetFilterRecusive(andB));
+                return new AndCalendarFilter(GetFilterArray(ruleset.And));
             }
 
             if(HasProperty(ruleset, "Summary"))
